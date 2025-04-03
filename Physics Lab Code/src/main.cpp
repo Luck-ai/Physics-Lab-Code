@@ -1,9 +1,7 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h> 
 #include <WiFi.h>
-#include <WiFiClient.h>
 #include <esp_now.h>
-#include <esp_wifi.h>
 #include "CO2Sensor.h"
 #include "DHT.h"
 
@@ -61,7 +59,7 @@ void ReadPMS3003(void)
       break;
     }
 
-    if (index == 4 || index == 6 || index == 8 || index == 10 || index == 12 || index == 14)
+    if (index == 10 || index == 12 || index == 14)
     {
       previousValue = value;
     }
