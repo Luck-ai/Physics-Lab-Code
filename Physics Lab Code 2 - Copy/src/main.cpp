@@ -1,13 +1,9 @@
 #include <esp_now.h>
 #include <WiFi.h>
 #include <Arduino.h>
-#include <esp_wifi.h>
-// libraries for the lcd screen
 #include <lvgl.h>
 #include <TFT_eSPI.h>
 #include "ui.h"
-
-// library for led strip
 #include <FastLED.h>
 
 #define LED_PIN 32
@@ -17,7 +13,6 @@
 #define COLOR_ORDER GRB
 CRGB leds[NUM_LEDS];
 
-// Initialization of screen parameters
 static const uint16_t screenWidth = 320;
 static const uint16_t screenHeight = 240;
 
@@ -26,7 +21,6 @@ static lv_color_t buf[screenWidth * screenHeight / 10];
 
 TFT_eSPI tft = TFT_eSPI(screenWidth, screenHeight);
 
-// same struct to recieve the information
 struct pm
 {
   uint32_t pm1;
@@ -37,13 +31,11 @@ struct pm
   uint32_t hum;
 };
 
-// variables to store the values to display on the screen
 char PM2_5_VALUE[10];
 char  CO2_VALUE[10];
 char  TEMPERATURE_VALUE[10];
 char  HUMIDITY_VALUE[10];
 
-// values for the knobs on the lcd
 int pm_knob;
 int co2_knob;
 int temp_knob;
@@ -72,32 +64,6 @@ void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color
   tft.endWrite();
 
   lv_disp_flush_ready(disp);
-}
-
-void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data)
-{
-  uint16_t touchX = 0, touchY = 0;
-
-  bool touched = false; // tft.getTouch( &touchX, &touchY, 600 );
-
-  if (!touched)
-  {
-    data->state = LV_INDEV_STATE_REL;
-  }
-  else
-  {
-    data->state = LV_INDEV_STATE_PR;
-
-    /*Set the coordinates*/
-    data->point.x = touchX;
-    data->point.y = touchY;
-
-    Serial.print("Data x ");
-    Serial.println(touchX);
-
-    Serial.print("Data y ");
-    Serial.println(touchY);
-  }
 }
 
 void SetupLCD(){
@@ -138,7 +104,7 @@ void setup()
 {
   Serial.begin(115200);
   WiFi.mode(WIFI_AP_STA);
-   const char* ssid = "ESP-32-AI";
+   const char* ssid = "ESP-32-Physics";
   const char* password = "12345678912345";
   WiFi.softAP(ssid, password);
   Serial.println("\nConnected! IP address: " + WiFi.softAPIP().toString());
@@ -150,18 +116,12 @@ void setup()
   SetupLCD();
 
   FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
-
-  pinMode(BUZZER_PIN, OUTPUT);
-  ledcAttachPin(BUZZER_PIN, 0);
-  ledcSetup(0, 1000, 10);
 }
 
 void loop()
 {
 
   lv_timer_handler();
-  delay(5);
-
   static unsigned long lastTime = 0;
   const unsigned long interval = 1000;
 
@@ -210,11 +170,6 @@ void loop()
   else if (readings.pm2_5 > 250)
   {
     setLEDBrightnessAndColor(100, CRGB::Purple);
-    ledcWrite(0, 1023);
-    tone(BUZZER_PIN, 1000);
-    delay(1000);
-    tone(BUZZER_PIN, 500);
-    delay(1000);
   }
   if (readings.pm2_5 <100){
     sprintf(PM2_5_VALUE, "%d.0", readings.pm2_5);
